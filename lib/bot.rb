@@ -26,12 +26,11 @@ module Bot
 
   def run_once
     connections.each do |connection|
-      data = connection.read
-      buffers << {
-        connection: connection,
-        data: data
-      } unless data.nil?
+      output = connection.read
+      buffer_push(connection, output)
     end
+
+    buffers.flatten!
 
     while buffer = buffers.shift
       actioneers.each do |actioneer|
@@ -40,6 +39,15 @@ module Bot
         end
       end
     end
+  rescue => ex
+    puts "Exception found: #{ex.message}\n#{ex.backtrace}"
+  end
+
+  def buffer_push(connection, data)
+    buffers << {
+      connection: connection,
+      data: data
+    } unless data.nil?
   end
 
   private
